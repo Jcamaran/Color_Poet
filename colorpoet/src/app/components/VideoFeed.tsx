@@ -13,10 +13,10 @@ interface VideoFeedProps {
  */
 const VideoFeed = memo(({ videoRef, canvasRef }: VideoFeedProps) => {
   return (
-    <div className="relative w-auto h-full ">
+    <div className="relative w-full h-full overflow-hidden rounded-lg">
       <video
         ref={videoRef}
-        className="rounded-lg w-full h-full "
+        className="absolute inset-0 w-full h-full object-cover rounded-lg"
         autoPlay
         playsInline
         muted
@@ -25,7 +25,7 @@ const VideoFeed = memo(({ videoRef, canvasRef }: VideoFeedProps) => {
       {/* Canvas overlay for hand landmarks */}
       <canvas
         ref={canvasRef}
-        className="absolute top-0 left-0 rounded-lg pointer-events-none w-full h-full"
+        className="absolute inset-0 rounded-lg pointer-events-none w-full h-full"
       />
     </div>
   );

@@ -21,7 +21,7 @@ import PoemCard from './PoemCard';
 import { generateColorPalette, getColorName, checkColorHit } from '../utils/colorUtils';
 
 // Indiqte which hand is being tracked (Left/Right/Unknown)
-type HandSide = "Left" | "Right" | "Unknown";
+type HandSide = "Left" | "Right" | "None";
 
 export default function ColorGrid() {
 const videoRef = useRef<HTMLVideoElement>(null);
@@ -34,6 +34,8 @@ const [isTracking, setIsTracking] = useState(false);
 const [handInfo, setHandInfo] = useState<string>('');
 const [selectedColor, setSelectedColor] = useState<string | null>(null);
 const [selectedColorName, setSelectedColorName] = useState<string | null>(null);
+const [landmarkCount, setLandmarkCount] = useState<number>(0);
+
 
 // Hand cursor position in SCREEN coordinates (pixels)
 const [handCursor, setHandCursor] = useState<{ x: number; y: number } | null>(null);
@@ -174,15 +176,15 @@ return () => {
    * Get which hand is being tracked (Left/Right/Unknown)
    */
   const getTrackedHand = (results: HandLandmarkerResult, index = 0): HandSide => {
-    const handedness = results.handednesses?.[index]?.[0]?.categoryName;
+    const handedness = results.handedness?.[index]?.[0]?.categoryName;
     
-    console.log('Handedness raw data:', handedness, results.handednesses?.[index]);
+    console.log('Handedness raw data:', handedness, results.handedness?.[index]);
 
     if (handedness === "Left" || handedness === "Right") {
       return handedness;
     }
 
-    return "Unknown";
+    return "None";
   };
 
   /**
@@ -204,9 +206,10 @@ return () => {
 
     if (results.landmarks && results.landmarks.length > 0) {
       const handSide = getTrackedHand(results, 0);
-      setHandInfo(`${handSide} hand detected`);
+      setHandInfo(`${handSide} hand`);
 
       const landmarks = results.landmarks[0];
+      setLandmarkCount(landmarks.length);
       drawHandConnections(ctx, landmarks, canvas.width, canvas.height);
       drawLandmarks(ctx, landmarks, canvas.width, canvas.height);
 
@@ -217,8 +220,9 @@ return () => {
 
       checkPinchGesture(results, 0);
     } else {
-      setHandInfo('No hand detected');
+      setHandInfo('None');
       setHandCursor(null);
+      setLandmarkCount(0);
     }
   }, [drawHandConnections, drawLandmarks, mapHandToPalette, checkPinchGesture]);
 
@@ -242,46 +246,57 @@ return () => {
   }, [handleResults, isTracking]);
 
   return (
-    <div className="h-screen p-4 overflow-y-hidden">
-      {/* Title at Top Left */}
-      <h1 className="text-4xl font-bold mb-5 pl-3">
-        <span className="text-blue-400">Color</span>
-        <span className="text-pink-400">Poet</span>
-      </h1>
+    <div className="h-screen p-4 overflow-hidden flex flex-col gap-2">
+
+      <div className="flex flex-row items-center gap-4 shrink-0">
+          <h1 className="text-3xl font-bold pl-3">
+            <span className="text-blue-400">Color</span>
+            <span className="text-pink-400">Poet</span>
+          </h1>
+          <p className="text-sm text-gray-400">Color Poetry Generation ● Hand Tracker</p>
+      </div>
 
       {/* Camera and Color Palette Side by Side */}
-      <div className="flex gap-6 w-full px-3 h-full  ">
+      <div className="flex gap-6 w-full px-3 h-1/2 shrink-0">
         
         {/* LEFT: Video Feed with Hand Tracking - Takes 2/3 width */}
-        <div className="flex flex-col items-start w-1/2 h-1/2 rounded-lg">
-          <VideoFeed videoRef={videoRef} canvasRef={canvasRef} />
+        <div className="relative flex flex-col items-start w-1/2 h-full rounded-lg">
 
+
+          <VideoFeed videoRef={videoRef} canvasRef={canvasRef} />
           {/* Hand Tracking Status */}
           {isTracking && (
-            <div className="mt-3 px-4 py-2 bg-gray-800 rounded-lg">
-              <p className="text-sm text-gray-300">{handInfo}</p>
+            <div className="absolute bottom-2 left-2 flex items-center gap-2 bg-black/40 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 px-3 py-1 text-xs w-40">
+  
+              {/* Pulsing live indicator */}
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
+              </span>
+
+              <div className="flex flex-col text-gray-200 ">
+                <p className="whitespace-nowrap">Tracking: {handInfo}</p>
+                <p className="text-gray-300">{landmarkCount} points detected</p>              
+              </div>
             </div>
-          )}
-      
+                      )}
         </div>
 
-        {/* RIGHT: Color Palette - Takes 1/2 width */}
-        <div className="flex flex-col items-center justify-start w-1/2 h-1/2 gap-0">
-          <div className="flex-1 w-full flex items-center justify-center min-h-0">
-            <ColorPalette colors={colorPalette} paletteRef={palleteContainerRef} />
-          </div>
-          <div className="shrink-0 w-full">
-            <SelectedColorDisplay colorName={selectedColorName} colorValue={selectedColor} />
-          </div>
+        {/* RIGHT: Color Palette with selected color inside */}
+        <div className="flex flex-row items-stretch justify-start w-1/2 h-full">
+          <ColorPalette colors={colorPalette} paletteRef={palleteContainerRef} colorName={selectedColorName} colorValue={selectedColor} />
         </div>
        
       </div>
+
 
       {/* Hand Cursor Overlay */}
       <HandCursor position={handCursor} />
 
       {/* Poem Card - Displays Generated Poem */}
-      <PoemCard color={selectedColor} colorName={selectedColorName} />
+      <div className="flex-1 min-h-0 px-3 pb-2">
+        <PoemCard color={selectedColor} colorName={selectedColorName} />
+      </div>
     </div>
   );
 }

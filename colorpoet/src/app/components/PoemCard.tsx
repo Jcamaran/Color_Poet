@@ -54,7 +54,7 @@ const PoemCard = memo(function PoemCard({ color, colorName }: PoemCardProps) {
 
   if (!color) {
     return (
-      <div className="w-full max-w-2xl mx-auto mt-8 p-8 rounded-lg border-2 border-dashed border-zinc-700 bg-zinc-900/50">
+      <div className="w-full h-full max-w-2xl mx-auto p-8 rounded-lg border-2 border-dashed border-zinc-700 bg-zinc-900/50 flex items-center justify-center">
         <p className="text-center text-zinc-500 text-lg">
           👆 Pinch a color to generate a poem
         </p>
@@ -63,12 +63,11 @@ const PoemCard = memo(function PoemCard({ color, colorName }: PoemCardProps) {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-8">
+    <div className="w-full h-full w-full mx-auto">
       <div 
-        className="p-8 rounded-lg shadow-2xl border-2 transition-all duration-300"
+        className="p-8 h-full  w-full  rounded-lg shadow-2xl  transition-all duration-300 overflow-y-auto"
         style={{
           backgroundColor: `${color}22`,
-          borderColor: color,
         }}
       >
         {/* Header */}

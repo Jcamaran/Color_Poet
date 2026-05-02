@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
       }
     });
     
-    console.log('📄 Response received:', response);
+    console.log('Response received:', response);
     const poem = response.text;
-    console.log('✅ Poem generated successfully');
+    console.log(' Poem generated successfully');
 
     return NextResponse.json({ poem, color, colorName });
     
