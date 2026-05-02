@@ -4,35 +4,30 @@
  */
 
 /**
- * Generate a color palette with diamond/circular pattern
+ * Generate a color palette with rectangular rainbow pattern
  */
 export const generateColorPalette = () => {
   const colors = [];
-  const size = 11; // 11x11 grid
-  const center = Math.floor(size / 2);
+  const cols = 15; // Width: 20 colors across
+  const rows = 10; // Height: 12 colors down
   
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      // Calculate distance from center for diamond shape
-      const distance = Math.abs(row - center) + Math.abs(col - center);
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      // Hue varies across columns (0-360 degrees)
+      const hue = (col / cols) * 360;
       
-      if (distance <= center) {
-        // Calculate hue based on angle around the center
-        const angle = Math.atan2(row - center, col - center);
-        const hue = ((angle + Math.PI) / (2 * Math.PI)) * 360;
-        
-        // Calculate lightness based on distance from center
-        const lightness = 30 + (distance / center) * 50; // 30% to 80%
-        
-        // Calculate saturation (more saturated near middle ring)
-        const saturation = distance === 0 ? 0 : 90 - Math.abs(distance - center / 1.5) * 20;
-        
-        colors.push({
-          color: `hsl(${hue}, ${Math.max(0, saturation)}%, ${lightness}%)`,
-          row,
-          col,
-        });
-      }
+      // Lightness varies down rows (lighter at top, darker at bottom)
+      const lightness = 80 - (row / rows) * 50; // 80% to 30%
+      
+      // Saturation - high in middle rows, lower at extremes
+      const saturationFactor = 1 - Math.abs((row / rows) - 0.5) * 0.4;
+      const saturation = 90 * saturationFactor;
+      
+      colors.push({
+        color: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+        row,
+        col,
+      });
     }
   }
   

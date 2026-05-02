@@ -13,10 +13,10 @@ interface VideoFeedProps {
  */
 const VideoFeed = memo(({ videoRef, canvasRef }: VideoFeedProps) => {
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-auto h-full ">
       <video
         ref={videoRef}
-        className="rounded-lg w-full h-full"
+        className="rounded-lg w-full h-full "
         autoPlay
         playsInline
         muted

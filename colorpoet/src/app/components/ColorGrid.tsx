@@ -15,11 +15,13 @@ import { HandTracker } from './HandTracker';
 import type { HandLandmarkerResult, NormalizedLandmark } from '@mediapipe/tasks-vision';
 import ColorPalette from './ColorPalette';
 import VideoFeed from './VideoFeed';
-import ControlButtons from './ControlButtons';
 import SelectedColorDisplay from './SelectedColorDisplay';
 import HandCursor from './HandCursor';
 import PoemCard from './PoemCard';
 import { generateColorPalette, getColorName, checkColorHit } from '../utils/colorUtils';
+
+// Indiqte which hand is being tracked (Left/Right/Unknown)
+type HandSide = "Left" | "Right" | "Unknown";
 
 export default function ColorGrid() {
 const videoRef = useRef<HTMLVideoElement>(null);
@@ -169,8 +171,24 @@ return () => {
   }, [mapHandToPalette]);
 
   /**
+   * Get which hand is being tracked (Left/Right/Unknown)
+   */
+  const getTrackedHand = (results: HandLandmarkerResult, index = 0): HandSide => {
+    const handedness = results.handednesses?.[index]?.[0]?.categoryName;
+    
+    console.log('Handedness raw data:', handedness, results.handednesses?.[index]);
+
+    if (handedness === "Left" || handedness === "Right") {
+      return handedness;
+    }
+
+    return "Unknown";
+  };
+
+  /**
    * Handle detection results from MediaPipe (called every frame)
    */
+
   const handleResults = useCallback((results: HandLandmarkerResult) => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
@@ -185,7 +203,8 @@ return () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (results.landmarks && results.landmarks.length > 0) {
-      setHandInfo('Hand detected');
+      const handSide = getTrackedHand(results, 0);
+      setHandInfo(`${handSide} hand detected`);
 
       const landmarks = results.landmarks[0];
       drawHandConnections(ctx, landmarks, canvas.width, canvas.height);
@@ -203,65 +222,59 @@ return () => {
     }
   }, [drawHandConnections, drawLandmarks, mapHandToPalette, checkPinchGesture]);
 
-  const startTracking = useCallback(async () => {
-    if (!trackerRef.current || !videoRef.current || !canvasRef.current) return;
+  // Auto-start tracking when component mounts
+  useEffect(() => {
+    const autoStart = async () => {
+      // Wait a bit for tracker to initialize
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (trackerRef.current && videoRef.current && canvasRef.current && !isTracking) {
+        try {
+          await trackerRef.current.startCamera(videoRef.current, handleResults);
+          setIsTracking(true);
+        } catch (error) {
+          console.error('Failed to auto-start tracking:', error);
+        }
+      }
+    };
 
-    try {
-      await trackerRef.current.startCamera(videoRef.current, handleResults);
-      setIsTracking(true);
-    } catch (error) {
-      console.error('Failed to start tracking:', error);
-      alert('Could not access camera. Please check permissions.');
-    }
-  }, [handleResults]);
-
-  const stopTracking = useCallback(() => {
-    trackerRef.current?.stop();
-    setIsTracking(false);
-    setHandInfo('');
-    setHandCursor(null);
-    setSelectedColor(null);
-    setSelectedColorName(null);
-    
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      ctx?.clearRect(0, 0, canvas.width, canvas.height);
-    }
-  }, []);
+    autoStart();
+  }, [handleResults, isTracking]);
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="h-screen p-4 overflow-y-hidden">
       {/* Title at Top Left */}
-      <h1 className="text-4xl font-bold mb-8">
+      <h1 className="text-4xl font-bold mb-5 pl-3">
         <span className="text-blue-400">Color</span>
         <span className="text-pink-400">Poet</span>
       </h1>
 
       {/* Camera and Color Palette Side by Side */}
-      <div className="flex gap-8 justify-center items-start max-w-7xl mx-auto">
+      <div className="flex gap-6 w-full px-3 h-full  ">
         
-        {/* LEFT: Video Feed with Hand Tracking */}
-        <div className="flex flex-col items-center" style={{ width: '440px', height: '250px' }}>
+        {/* LEFT: Video Feed with Hand Tracking - Takes 2/3 width */}
+        <div className="flex flex-col items-start w-1/2 h-1/2 rounded-lg">
           <VideoFeed videoRef={videoRef} canvasRef={canvasRef} />
 
-          <ControlButtons 
-            isTracking={isTracking}
-            onStart={startTracking}
-            onStop={stopTracking}
-          />
-
-          {/* Status */}
-          <p className="mt-4 text-zinc-400">
-            {handInfo || 'Click "Start Hand Tracking" to begin'}
-          </p>
+          {/* Hand Tracking Status */}
+          {isTracking && (
+            <div className="mt-3 px-4 py-2 bg-gray-800 rounded-lg">
+              <p className="text-sm text-gray-300">{handInfo}</p>
+            </div>
+          )}
+      
         </div>
 
-        {/* RIGHT: Fixed Color Palette */}
-        <div className="flex flex-col items-center" style={{ width: '440px' }}>
-          <ColorPalette colors={colorPalette} paletteRef={palleteContainerRef} />
-          <SelectedColorDisplay colorName={selectedColorName} colorValue={selectedColor} />
+        {/* RIGHT: Color Palette - Takes 1/2 width */}
+        <div className="flex flex-col items-center justify-start w-1/2 h-1/2 gap-0">
+          <div className="flex-1 w-full flex items-center justify-center min-h-0">
+            <ColorPalette colors={colorPalette} paletteRef={palleteContainerRef} />
+          </div>
+          <div className="shrink-0 w-full">
+            <SelectedColorDisplay colorName={selectedColorName} colorValue={selectedColor} />
+          </div>
         </div>
+       
       </div>
 
       {/* Hand Cursor Overlay */}

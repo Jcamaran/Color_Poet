@@ -18,16 +18,23 @@ interface ColorPaletteProps {
  * Displays the color grid - memoized to prevent unnecessary re-renders
  */
 const ColorPalette = memo(({ colors, paletteRef }: ColorPaletteProps) => {
+  // Calculate grid dimensions from data
+  const cols = Math.max(...colors.map(c => c.col)) + 1;
+  const rows = Math.max(...colors.map(c => c.row)) + 1;
+  
   return (
     <div 
       ref={paletteRef} 
-      className="bg-zinc-800 p-4 rounded-lg flex flex-col items-center justify-center" 
-      style={{ width: '440px', height: '370px' }}
+      className="bg-gray-700/40 p-6 rounded-lg flex flex-col items-start justify-center w-full h-full" 
     >
-      {/* Color Palette Grid - Centered */}
+      {/* Color Palette Grid - Responsive using CSS Grid */}
       <div 
-        className="relative mb-6 w-full h-full flex items-start justify-center"
-        style={{ width: '290px', height: '500px' }}
+        className="grid gap-1 w-2/3 h-full"
+        style={{
+          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gridTemplateRows: `repeat(${rows}, 1fr)`,
+          aspectRatio: `${cols} / ${rows}`, // Maintains rectangular shape
+        }}
       >
         {colors.map((item, index) => (
           <div
@@ -35,13 +42,10 @@ const ColorPalette = memo(({ colors, paletteRef }: ColorPaletteProps) => {
             data-color={item.color}
             style={{
               backgroundColor: item.color,
-              position: 'absolute',
-              left: `${item.col * 25}px`,
-              top: `${item.row * 25}px`,
-              width: '30px',
-              height: '30px',
+              gridColumn: item.col + 1,
+              gridRow: item.row + 1,
             }}
-            className="hover:scale-110 transition-transform cursor-pointer"
+            className="hover:scale-110 transition-transform cursor-pointer rounded-sm"
           />
         ))}
       </div>
