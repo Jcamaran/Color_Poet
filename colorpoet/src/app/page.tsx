@@ -2,7 +2,8 @@ import ColorGrid from './components/ColorGrid';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-950">
+    // dark:bg-[#070B10]
+    <div className="min-h-screen  dark:bg-[#070B10]  ">
       <ColorGrid />
     </div>
   );

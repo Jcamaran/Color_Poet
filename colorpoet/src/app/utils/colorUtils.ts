@@ -6,17 +6,15 @@
 /**
  * Generate a color palette with rectangular rainbow pattern
  */
-// ROYGBIV hue stops: Red, Orange, Yellow, Green, Blue, Indigo, Violet
-const ROYGBIV_HUES = [0, 30, 60, 120, 240, 270, 300];
-
 export const generateColorPalette = () => {
   const colors = [];
-  const cols = ROYGBIV_HUES.length;
-  const rows = 10;
-
+  const cols = 15; 
+  const rows = 10; 
+  
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
-      const hue = ROYGBIV_HUES[col];
+      // Hue varies across columns (0-360 degrees)
+      const hue = (col / cols) * 360;
       
       // Lightness varies down rows (lighter at top, darker at bottom)
       const lightness = 80 - (row / rows) * 50; // 80% to 30%
@@ -48,12 +46,13 @@ export const getColorName = (hslString: string): string => {
   
   // Categorize by hue ranges (color wheel: 0-360 degrees)
   if (hue >= 345 || hue < 15) return 'Red';
-  if (hue < 50) return 'Orange';
-  if (hue < 90) return 'Yellow';
-  if (hue < 210) return 'Green';
+  if (hue < 45) return 'Orange';
+  if (hue < 75) return 'Yellow';
+  if (hue < 165) return 'Green';
+  if (hue < 195) return 'Cyan';
   if (hue < 255) return 'Blue';
   if (hue < 285) return 'Indigo';
-  if (hue < 345) return 'Violet';
+  if (hue < 345) return 'Purple';
   return 'Unknown';
 };
 

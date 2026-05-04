@@ -3,12 +3,26 @@
 import { useState, useEffect } from 'react';
 import { memo } from 'react';
 
+import { getTodaysPoem} from '../utils/DailyPoem';
+
 interface PoemCardProps {
   color: string | null;
   colorName: string | null;
+  onPoemGenerated?: (color: string, colorName: string, poem: string) => void;
 }
 
-const PoemCard = memo(function PoemCard({ color, colorName }: PoemCardProps) {
+
+const today = new Date();
+
+const formmattedDate = today.toLocaleDateString('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+});
+
+const todaysPoem = getTodaysPoem();
+
+const PoemCard = memo(function PoemCard({ color, colorName, onPoemGenerated }: PoemCardProps) {
   const [poem, setPoem] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +55,11 @@ const PoemCard = memo(function PoemCard({ color, colorName }: PoemCardProps) {
 
         const data = await response.json();
         setPoem(data.poem);
+        
+        // Add to history
+        if (onPoemGenerated) {
+          onPoemGenerated(color, colorName, data.poem);
+        }
       } catch (err) {
         console.error('Error generating poem:', err);
         setError(err instanceof Error ? err.message : 'Failed to generate poem. Please try again.');
@@ -50,66 +69,45 @@ const PoemCard = memo(function PoemCard({ color, colorName }: PoemCardProps) {
     };
 
     generatePoem();
-  }, [color, colorName]);
+  }, [color, colorName, onPoemGenerated]);
 
-  if (!color) {
-    return (
-      <div className="w-full h-full max-w-2xl mx-auto p-8 rounded-lg border-2 border-dashed border-zinc-700 bg-zinc-900/50 flex items-center justify-center">
-        <p className="text-center text-zinc-500 text-lg">
-          👆 Pinch a color to generate a poem
-        </p>
-      </div>
-    );
-  }
+
 
   return (
-    <div className="w-full h-full w-full mx-auto">
-      <div 
-        className="p-8 h-full  w-full  rounded-lg shadow-2xl  transition-all duration-300 overflow-y-auto"
-        style={{
-          backgroundColor: `${color}22`,
-        }}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">
-            Poem for <span style={{ color }}>{colorName}</span>
-          </h2>
-          <div 
-            className="w-12 h-12 rounded-full border-2 border-white shadow-lg"
-            style={{ backgroundColor: color }}
-          />
+    <div className="w-full h-full flex flex-col gap-6 overflow-y-auto ">
+      {/* Today's Source Poem */}
+      <div className="rounded-2xl bg-gradient-to-br from-zinc-900/90 to-zinc-800/90 backdrop-blur-sm border border-zinc-700/50 shadow-2xl p-8  h-full ">
+        {/* Date Header */}
+        <div className="text-center mb-8 border-b border-zinc-700/50 pb-6">
+          <p className="text-zinc-400 text-sm uppercase tracking-widest mb-2">Today&apos;s Poem</p>
+          <h2 className="text-3xl font-ui font-light text-white mb-1">{formmattedDate}</h2>
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-zinc-600"></div>
+            <span className="text-zinc-500 text-xs">✦</span>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-zinc-600"></div>
+          </div>
         </div>
 
-        {/* Poem Content */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-            <p className="ml-4 text-zinc-300 text-lg">Composing your poem...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="py-8 text-center">
-            <p className="text-red-400 text-lg">{error}</p>
-          </div>
-        )}
-
-        {poem && !isLoading && (
-          <div className="prose prose-invert max-w-none">
-            <div className="text-white text-lg leading-relaxed whitespace-pre-line font-serif italic">
-              {poem}
-            </div>
-          </div>
-        )}
-
-        {/* Color Info */}
-        <div className="mt-6 pt-4 border-t border-zinc-700">
-          <p className="text-sm text-zinc-400">
-            Color: <span className="font-mono">{color}</span>
-          </p>
+        {/* Poem Title & Author */}
+        <div className="text-center mb-6">
+          <h3 className="text-2xl font-poem font-semibold text-zinc-100 mb-2 italic">
+            &ldquo;{todaysPoem.title}&rdquo;
+          </h3>
+          <p className="text-zinc-400 text-sm font-ui">by {todaysPoem.author}</p>
+        </div>
+    
+        {/* Poem Lines */}
+        <div className="font-poem text-lg leading-loose text-zinc-200 text-center space-y-1 max-w-xl mx-auto">
+          {todaysPoem.lines.map((line, index) => (
+            <p key={index} className="transition-all hover:text-white">
+              {line}
+            </p>
+          ))}
         </div>
       </div>
+
+      {/* Generated Color Poem */}
+      
     </div>
   );
 });

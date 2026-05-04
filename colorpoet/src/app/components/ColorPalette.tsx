@@ -27,7 +27,7 @@ const ColorPalette = memo(({ colors, paletteRef, colorName, colorValue }: ColorP
   
   return (
     <div 
-      className="bg-gray-700/40 p-4 rounded-lg flex flex-row items-stretch w-full h-full gap-4" 
+      className="bg-[#0D121A] p-4 rounded-lg flex flex-row items-stretch w-full h-full gap-4" 
     >
       {/* Color Palette Grid */}
       <div

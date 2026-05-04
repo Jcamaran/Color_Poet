@@ -29,6 +29,10 @@ export async function POST(request: NextRequest) {
     
     // Initialize Gemini AI
     const genAI = new GoogleGenAI({ apiKey });
+
+    const monthlySourcePoems = {
+
+    }
     
     // Generate poem
     const prompt = `Write a short, beautiful poem (4-6 lines) inspired by the color "${colorName}" (${color}). The poem should evoke the emotions, imagery, and feelings associated with this color. Be creative and poetic. Do not include a title, just the poem itself.`;
