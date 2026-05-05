@@ -4,6 +4,28 @@
  */
 
 /**
+ * Convert HSL to Hex color code
+ */
+export const hslToHex = (hslString: string): string => {
+  // Extract values from "hsl(240, 80%, 50%)"
+  const match = hslString.match(/hsl\((\d+\.?\d*),\s*(\d+\.?\d*)%,\s*(\d+\.?\d*)%\)/);
+  if (!match) return hslString;
+
+  const h = parseFloat(match[1]);
+  const s = parseFloat(match[2]);
+  const l = parseFloat(match[3]);
+
+  const hDecimal = l / 100;
+  const a = (s * Math.min(hDecimal, 1 - hDecimal)) / 100;
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const color = hDecimal - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+};
+
+/**
  * Generate a color palette with rectangular rainbow pattern
  */
 export const generateColorPalette = () => {

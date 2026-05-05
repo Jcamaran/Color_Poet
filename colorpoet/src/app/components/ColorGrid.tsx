@@ -34,6 +34,7 @@ const [isTracking, setIsTracking] = useState(false);
 const [handInfo, setHandInfo] = useState<string>('');
 const [selectedColor, setSelectedColor] = useState<string | null>(null);
 const [selectedColorName, setSelectedColorName] = useState<string | null>(null);
+const [hoveredColor, setHoveredColor] = useState<string | null>(null);
 const [landmarkCount, setLandmarkCount] = useState<number>(0);
 const [showHistory, setShowHistory] = useState(false);
 
@@ -192,6 +193,15 @@ return () => {
     if (!trackerRef.current) return;
     
     const distance = trackerRef.current.getDistance(results, handIndex, 4, 8);
+
+    const indexPos = mapHandToPalette(results, handIndex, 8);
+    if (indexPos) { 
+      const color = checkColorHit(indexPos.x, indexPos.y);
+      setHoveredColor(color);
+
+    } else {
+      setHoveredColor(null);
+    }
     
     if (distance && distance < 0.05) {
       const thumb = mapHandToPalette(results, handIndex, 4);
@@ -288,14 +298,14 @@ return () => {
 
       <div className="flex flex-row items-center justify-between shrink-0 gap-2">
         {/* Left side: Logo and Title */}
-        <div className="flex flex-row items-center gap-2">
+        <div className="flex flex-row items-center gap-4">
           <Image className="h-9 w-9" src="/quill_purple.png" alt="ColorPoet Logo" width={36} height={36} />
 
-          <h1 className="text-3xl font-bold  font-blue-400 bg-linear-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent pb-1">
+          <h1 className="text-3xl font-bold  font-blue-400 bg-linear-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent pb-1">
             ColorPoet
           </h1>
           
-          <p className=" pl-1 text-xs text-gray-400 ">Color Poetry Generation ● Hand Tracker</p>
+          <p className=" pl-1 text-xs text-slate-400 ">Color Poetry Generation ● Hand Tracker</p>
         </div>
 
         {/* Right side: History Widget */}
@@ -306,9 +316,9 @@ return () => {
 
 
           <div 
-              className="  flex items-center gap-2 bg-black/40 backdrop-blur-lg rounded-lg shadow-xl  border border-white/20 px-3 py-1 text-xs  h-full">
+              className="  flex items-center gap-2 bg-black/40 backdrop-blur-lg rounded-lg shadow-xl  border border-white/20 px-4 py-2 text-xs  h-10">
              {/* Glowing indicator - changes based on isTracking */}
-              <span className="relative flex h-2.5 w-2.5">
+              <span className="relative flex h-2.5 w-2.5 ">
                 {isTracking ? (
                   <>
                     {/* Green pulsing ring when live */}
@@ -323,7 +333,7 @@ return () => {
                 )}
               </span>
 
-              <div className="flex flex-col text-gray-200 ">
+              <div className="flex flex-col text-slate-200 ">
                 <p className={`whitespace-nowrap ${isTracking ? 'text-green-400' : 'text-red-400'}`}>
                   {isTracking ? 'LIVE' : 'OFF'} - <span className="text-white">Hand Tracking</span>
                 </p> 
@@ -333,28 +343,28 @@ return () => {
           
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-2 bg-black/40 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 px-4 py-2 hover:bg-black/60 transition-all"
+            className="flex items-center gap-2 bg-black/40 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 px-4 py-2 hover:bg-black/60 transition-all h-10"
           >
-            <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-sm font-medium text-white">History</span>
-            <span className="text-xs text-gray-400 bg-white/10 px-2 py-0.5 rounded-full">{poemHistory.length}</span>
+            <span className="text-xs font-medium text-white">History</span>
+            <span className="text-xs text-slate-400 bg-white/10 px-2 py-0.5 rounded-full">{poemHistory.length}</span>
           </button>
 
           {/* History Dropdown */}
           {showHistory && (
-            <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-zinc-900/95 backdrop-blur-xl rounded-lg shadow-2xl border border-zinc-700 z-50">
+            <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-slate-950/95 backdrop-blur-xl rounded-lg shadow-2xl border border-slate-700 z-50">
               <div className="p-4">
                 <h3 className="text-lg font-bold text-white mb-3">Recent Poems</h3>
                 {poemHistory.length === 0 ? (
-                  <p className="text-gray-400 text-sm text-center py-8">No poems generated yet</p>
+                  <p className="text-slate-400 text-sm text-center py-8">No poems generated yet</p>
                 ) : (
                   <div className="space-y-3">
                     {poemHistory.map((entry, index) => (
-                      <div key={index} className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700 hover:border-zinc-600 transition-all">
+                      <div key={index} className="p-3 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-all">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-gray-400">{entry.date}</span>
+                          <span className="text-xs text-slate-400">{entry.date}</span>
                           <div className="flex items-center gap-2">
                             <div 
                               className="w-4 h-4 rounded-full border border-white/20"
@@ -363,7 +373,7 @@ return () => {
                             <span className="text-xs font-medium" style={{ color: entry.color }}>{entry.colorName}</span>
                           </div>
                         </div>
-                        <p className="text-sm text-gray-300 line-clamp-2 italic">{entry.poem}</p>
+                        <p className="text-sm text-slate-300 line-clamp-2 italic">{entry.poem}</p>
                       </div>
                     ))}
                   </div>
@@ -402,9 +412,9 @@ return () => {
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
                 </span>
 
-                <div className="flex flex-col text-gray-200 ">
+                <div className="flex flex-col text-slate-200 ">
                   <p className="whitespace-nowrap">Tracking: {handInfo}</p>
-                  <p className="text-gray-300">{landmarkCount} points detected</p>              
+                  <p className="text-slate-300">{landmarkCount} points detected</p>              
                 </div>
               </div>
             )}
@@ -412,8 +422,10 @@ return () => {
 
           {/* Color Palette */}
           <div className="flex-1 min-h-0">
-            <ColorPalette colors={colorPalette} paletteRef={palleteContainerRef} colorName={selectedColorName} colorValue={selectedColor} />
+            <ColorPalette colors={colorPalette} paletteRef={palleteContainerRef} colorName={selectedColorName} colorValue={selectedColor} hoveredColor={hoveredColor} />
           </div>
+
+        
           
         </div>
 

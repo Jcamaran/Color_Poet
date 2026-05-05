@@ -27,6 +27,24 @@ const PoemCard = memo(function PoemCard({ color, colorName, onPoemGenerated }: P
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Dynamic font size based on poem length
+  const getPoemFontSize = (text: string | null) => {
+    if (!text) return 'text-xl';
+    const length = text.length;
+    if (length < 150) return 'text-xl';
+    if (length < 250) return 'text-lg';
+    if (length < 400) return 'text-lg';
+    return 'text-lg';
+  };
+
+  // Dynamic font size for daily poem
+  const getDailyPoemFontSize = () => {
+    const totalLength = todaysPoem.lines.join('').length;
+    if (totalLength < 200) return 'text-lg';
+    if (totalLength < 400) return 'text-base';
+    return 'text-sm';
+  };
+
   useEffect(() => {
     if (!color || !colorName) {
       setPoem(null);
@@ -74,30 +92,30 @@ const PoemCard = memo(function PoemCard({ color, colorName, onPoemGenerated }: P
 
 
   return (
-    <div className="w-full h-full flex flex-col gap-6 overflow-y-auto ">
+    <div className="w-full h-full flex flex-col gap-6 p-0">
       {/* Today's Source Poem */}
-      <div className="rounded-2xl bg-gradient-to-br from-zinc-900/90 to-zinc-800/90 backdrop-blur-sm border border-zinc-700/50 shadow-2xl p-8  h-full ">
+      <div className="rounded-2xl bg-linear-to-br from-slate-950/90 to-slate-900/90 backdrop-blur-sm border border-gray-300/30 shadow-2xl p-4 flex-1 min-h-0 flex flex-col w-full ">
         {/* Date Header */}
-        <div className="text-center mb-8 border-b border-zinc-700/50 pb-6">
-          <p className="text-zinc-400 text-sm uppercase tracking-widest mb-2">Today&apos;s Poem</p>
-          <h2 className="text-3xl font-ui font-light text-white mb-1">{formmattedDate}</h2>
+        <div className="text-center mb-6 border-b border-slate-700/50 pb-4 shrink-0">
+          <p className="text-slate-400 text-sm uppercase tracking-widest mb-2">Today&apos;s Poem</p>
+          <h2 className="text-2xl font-ui font-light text-white mb-1">{formmattedDate}</h2>
           <div className="flex items-center justify-center gap-2 mt-4">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-zinc-600"></div>
-            <span className="text-zinc-500 text-xs">✦</span>
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-zinc-600"></div>
+            <div className="h-px w-12 bg-linear-to-r from-transparent to-slate-600"></div>
+            <span className="text-slate-500 text-xs">✦</span>
+            <div className="h-px w-12 bg-linear-to-l from-transparent to-slate-600"></div>
           </div>
         </div>
 
         {/* Poem Title & Author */}
-        <div className="text-center mb-6">
-          <h3 className="text-2xl font-poem font-semibold text-zinc-100 mb-2 italic">
+        <div className="text-center mb-4 shrink-0">
+          <h3 className="text-xl font-poem font-semibold text-slate-100 mb-2 italic">
             &ldquo;{todaysPoem.title}&rdquo;
           </h3>
-          <p className="text-zinc-400 text-sm font-ui">by {todaysPoem.author}</p>
+          <p className="text-slate-400 text-sm font-ui">by {todaysPoem.author}</p>
         </div>
     
-        {/* Poem Lines */}
-        <div className="font-poem text-lg leading-loose text-zinc-200 text-center space-y-1 max-w-xl mx-auto">
+        {/* Poem Lines with dynamic sizing and overflow */}
+        <div className={`flex flex-col items-center justify-center w-full min-h-0 overflow-y-auto font-poem ${getDailyPoemFontSize()} leading-relaxed text-slate-200 text-center space-y-1 max-w-xl mx-auto px-5`}>
           {todaysPoem.lines.map((line, index) => (
             <p key={index} className="transition-all hover:text-white">
               {line}

@@ -13,7 +13,7 @@ interface VideoFeedProps {
  */
 const VideoFeed = memo(({ videoRef, canvasRef }: VideoFeedProps) => {
   return (
-    <div className="relative w-full h-full overflow-hidden rounded-lg">
+    <div className="relative w-full h-full overflow-hidden rounded-lg border border-gray-300/30">
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover rounded-lg"
