@@ -24,3 +24,33 @@ body {
   color: var(--foreground);
   font-family: var(--font-ui);
 }
+
+/* Smooth Fade In Animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Fade and Slide Up Animation */
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+
+.animate-fade-slide-in {
+  animation: fade-slide-in 0.5s ease-out;
+}

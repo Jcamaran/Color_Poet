@@ -17,7 +17,7 @@ import type { HandLandmarkerResult, NormalizedLandmark } from '@mediapipe/tasks-
 import ColorPalette from './ColorPalette';
 import VideoFeed from './VideoFeed';
 import HandCursor from './HandCursor';
-import PoemCard from './PoemCard';
+import PoemCard, { PoemCardRef } from './PoemCard';
 import { generateColorPalette, getColorName, checkColorHit } from '../utils/colorUtils';
 
 // Indiqte which hand is being tracked (Left/Right/Unknown)
@@ -28,6 +28,7 @@ const videoRef = useRef<HTMLVideoElement>(null);
 const canvasRef = useRef<HTMLCanvasElement>(null);
 const trackerRef = useRef<HandTracker | null>(null);
 const palleteContainerRef = useRef<HTMLDivElement>(null);
+const poemCardRef = useRef<PoemCardRef>(null);
 
 
 const [isTracking, setIsTracking] = useState(false);
@@ -104,6 +105,13 @@ return () => {
       localStorage.setItem('poemHistory', JSON.stringify(updated));
       return updated;
     });
+  }, []);
+
+  // Function to trigger poem generation from button
+  const handleGeneratePoem = useCallback(() => {
+    if (poemCardRef.current) {
+      poemCardRef.current.generatePoem();
+    }
   }, []);
 
   /**
@@ -302,7 +310,7 @@ return () => {
           <Image className="h-9 w-9" src="/quill_purple.png" alt="ColorPoet Logo" width={36} height={36} />
 
           <h1 className="text-3xl font-bold  font-blue-400 bg-linear-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent pb-1">
-            ColorPoet
+            Color<span className="text-violet-500/69">Poet</span>
           </h1>
           
           <p className=" pl-1 text-xs text-slate-400 ">Color Poetry Generation ● Hand Tracker</p>
@@ -422,7 +430,7 @@ return () => {
 
           {/* Color Palette */}
           <div className="flex-1 min-h-0">
-            <ColorPalette colors={colorPalette} paletteRef={palleteContainerRef} colorName={selectedColorName} colorValue={selectedColor} hoveredColor={hoveredColor} />
+            <ColorPalette colors={colorPalette} paletteRef={palleteContainerRef} colorName={selectedColorName} colorValue={selectedColor} hoveredColor={hoveredColor} onGeneratePoem={handleGeneratePoem} />
           </div>
 
         
@@ -431,7 +439,7 @@ return () => {
 
         {/* RIGHT COLUMN: Poem Card - Full height */}
         <div className="w-1/2 h-full">
-          <PoemCard color={selectedColor} colorName={selectedColorName} onPoemGenerated={addToHistory} />
+          <PoemCard ref={poemCardRef} color={selectedColor} colorName={selectedColorName} onPoemGenerated={addToHistory} />
         </div>
         
       </div>

@@ -29,7 +29,7 @@ const TipsBar = memo(function TipsBar() {
   const currentTip = tips[currentTipIndex];
 
   return (
-    <div className="w-full bg-slate-950/80 backdrop-blur-sm border border-blue-700/30 rounded-lg p-3 shadow-lg border border-gray-300/30">
+    <div className="w-full bg-slate-950/80 backdrop-blur-none border border-blue-700/30 rounded-lg p-3 shadow-lg \ h-15 ">
       <div className="flex items-center gap-4">
         {/* Logo */}
         <div className="shrink-0">

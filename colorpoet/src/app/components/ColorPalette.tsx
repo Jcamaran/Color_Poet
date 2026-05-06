@@ -18,13 +18,14 @@ interface ColorPaletteProps {
   colorName: string | null;
   colorValue: string | null;
   hoveredColor: string | null;
+  onGeneratePoem?: () => void;
 }
 
 /**
  * ColorPalette Component
  * Displays the color grid - memoized to prevent unnecessary re-renders
  */
-const ColorPalette = memo(({ colors, paletteRef, colorName, colorValue, hoveredColor }: ColorPaletteProps) => {
+const ColorPalette = memo(({ colors, paletteRef, colorName, colorValue, hoveredColor, onGeneratePoem }: ColorPaletteProps) => {
   // Calculate grid dimensions from data
   const cols = Math.max(...colors.map(c => c.col)) + 1;
   const rows = Math.max(...colors.map(c => c.row)) + 1;
@@ -75,7 +76,7 @@ const ColorPalette = memo(({ colors, paletteRef, colorName, colorValue, hoveredC
             Selected Color
           </h3>
           <div className="flex-1 flex items-center ">
-            <SelectedColorDisplay colorName={colorName} colorValue={colorValue} />
+            <SelectedColorDisplay colorName={colorName} colorValue={colorValue} onGeneratePoem={onGeneratePoem} />
           </div>
         </div>
       </div>

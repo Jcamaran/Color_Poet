@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 
 export async function POST(request: NextRequest) {
-  console.log('🎨 Poem API called');
+  console.log('Poem API called');
   try {
-    const { color, colorName } = await request.json();
-    console.log('📝 Request data:', { color, colorName });
+    const { color, colorName, sourcePoem, sourcePoemTitle, sourcePoemAuthor } = await request.json();
+    console.log('Request data:', { color, colorName, sourcePoem: sourcePoem?.substring(0, 50) + '...' });
 
-    if (!color || !colorName) {
-      console.error('Missing color or colorName');
+    if (!color || !colorName || !sourcePoem) {
+      console.error('Missing required fields');
       return NextResponse.json(
-        { error: 'Color and color name are required' },
+        { error: 'Color, color name, and source poem are required' },
         { status: 400 }
       );
     }
@@ -30,12 +30,23 @@ export async function POST(request: NextRequest) {
     // Initialize Gemini AI
     const genAI = new GoogleGenAI({ apiKey });
 
-    const monthlySourcePoems = {
-
-    }
+   
     
-    // Generate poem
-    const prompt = `Write a short, beautiful poem (4-6 lines) inspired by the color "${colorName}" (${color}). The poem should evoke the emotions, imagery, and feelings associated with this color. Be creative and poetic. Do not include a title, just the poem itself.`;
+    // Generate poem with source included
+    const prompt = `You are a poet. Rewrite the following poem to match the vibe and emotion of the color ${colorName} (${color}).
+
+ORIGINAL POEM:
+"${sourcePoemTitle}" by ${sourcePoemAuthor}
+${sourcePoem}
+
+INSTRUCTIONS:
+- Keep EXACTLY the same number of lines (${sourcePoem.split('\n').length} lines)
+- Keep similar line lengths to the original
+- Adapt the imagery, metaphors, and mood to reflect the color ${colorName}
+- Preserve the rhythm and structure
+- Make it feel like the color ${colorName}
+
+Return ONLY the rewritten poem, no title, no explanations, just the poem lines:`;
     
     console.log('Calling Gemini API...');
     const response = await genAI.models.generateContent({
@@ -45,13 +56,13 @@ export async function POST(request: NextRequest) {
         temperature: 0.9,           // High creativity
         topK: 40,                   // Consider top 40 tokens
         topP: 0.95,                 // Nucleus sampling
-        maxOutputTokens: 100,       // Limit poem length
+        maxOutputTokens: 200,       // Limit poem length
       }
     });
     
     console.log('Response received:', response);
     const poem = response.text;
-    console.log(' Poem generated successfully');
+    console.log('Poem generated successfully');
 
     return NextResponse.json({ poem, color, colorName });
     

@@ -9,13 +9,14 @@ import { Sparkles } from 'lucide-react';
 interface SelectedColorDisplayProps {
   colorName: string | null;
   colorValue: string | null;
+  onGeneratePoem?: () => void;
 }
 
 /**
  * SelectedColorDisplay Component
  * Shows the selected color hex code - click to copy
  */
-const SelectedColorDisplay = memo(({ colorName, colorValue }: SelectedColorDisplayProps) => {
+const SelectedColorDisplay = memo(({ colorName, colorValue, onGeneratePoem }: SelectedColorDisplayProps) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopyToClipboard = async () => {
@@ -42,7 +43,7 @@ const SelectedColorDisplay = memo(({ colorName, colorValue }: SelectedColorDispl
   return (
     <div 
       
-      className="p-4 bg-slate-950 rounded-xl w-full h-full flex flex-col justify-center items-center border border-gray-300/30 cursor-pointer hover:border-blue-500/50 transition-all group"
+      className="p-4 bg-slate-950 rounded-xl w-full h-full flex flex-col justify-center items-center border border-gray-300/30 cursor-pointer hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 ease-in-out group"
     >
       <div className="flex flex-col items-center gap-3 w-full">
         <div
@@ -65,9 +66,9 @@ const SelectedColorDisplay = memo(({ colorName, colorValue }: SelectedColorDispl
             {copied ? 'Copied hex to clipboard!' : 'Click to copy hex'}
           </p>
         </div>
-        <button className=" px-4 py-2 bg-linear-to-r from-[#4169e1] to-[#89CFF0] text-white rounded-lg hover:border hover:border-white/30 transition-colors flex flex-row items-center gap-2 text-sm mt-2 cursor-pointer">
+        <button onClick={onGeneratePoem} className="px-4 py-2 bg-linear-to-r from-[#4169e1] to-[#89CFF0] hover:from-[#5B7FED] hover:to-[#A0E0FF] text-white rounded-lg transition-color duration-300 flex flex-row items-center gap-2 text-sm mt-2 cursor-pointer">
           <Sparkles className="w-4 h-4" />
-          <h1 className="text-md text-white font-semibold  ">Select Color</h1  >
+          <h1 className="text-md text-white font-semibold">Select Color</h1>
         </button>
       </div>
     </div>
