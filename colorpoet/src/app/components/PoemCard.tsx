@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { Save, Share2 } from 'lucide-react';
+import { useState, useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
+import { Save, Share2, Copy, TypeIcon, Palette, Plus, Minus } from 'lucide-react';
 import { getTodaysPoem} from '../utils/DailyPoem';
 import { Calendar } from 'lucide-react';
-import { hslToHex } from '../utils/colorUtils';
-
+import { getAuthorInfo } from '../utils/AuthorBios';
+import Head from 'next/head';
 
 import Aurora from "./Aurora";
 import PoemDetails from "./PoemDetails";
@@ -35,6 +35,59 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showGenerated, setShowGenerated] = useState(false);
+  const [colorMeanings, setColorMeanings] = useState<string[]>([]);
+  const [poemType, setPoemType] = useState<string | null>(null);
+  const [generatedTitle, setGeneratedTitle] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [fontSizeMultiplier, setFontSizeMultiplier] = useState(1);
+
+  
+  // Refs for dynamic text spacing
+  const originalPoemRef = useRef<HTMLDivElement>(null);
+  const generatedPoemRef = useRef<HTMLDivElement>(null);
+  const [originalPoemStyle, setOriginalPoemStyle] = useState<React.CSSProperties>({});
+  const [generatedPoemStyle, setGeneratedPoemStyle] = useState<React.CSSProperties>({});
+
+
+
+
+  // handle copy poem to clipboard
+  const handlePoemCopy = async () => {
+    const textToCopy = showGenerated && poem ? poem : todaysPoem.lines.join('\n');
+
+    try { 
+      await navigator.clipboard.writeText(textToCopy);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("failed to copy poem:", error);
+      alert('Failed to copy poem to clipboard');
+    }
+  };
+
+  // Font size adjustment handlers
+  const increaseFontSize = () => {
+    setFontSizeMultiplier(prev => Math.min(prev + 0.1, 2)); // Max 2x
+  };
+
+  const decreaseFontSize = () => {
+    setFontSizeMultiplier(prev => Math.max(prev - 0.1, 0.6)); // Min 0.6x
+  };
+
+  const resetFontSize = () => {
+    setFontSizeMultiplier(1);
+  };
+
+  // Try similar colors handler
+  const handleTrySimilarColors = () => {
+    // Generate similar color by adjusting hue slightly
+    if (!color) return;
+    
+    // This would ideally trigger the parent component to select similar colors
+    // For now, show an alert - you can implement the actual color selection logic
+    alert('Similar colors feature - this will show colors similar to ' + colorName);
+    // TODO: Implement similar color selection in parent component
+  };
 
   // Save poem handler
   const handleSavePoem = () => {
@@ -87,7 +140,7 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
   const getDailyPoemFontSize = () => {
     const totalLength = todaysPoem.lines.join('').length;
     if (totalLength < 200) return 'text-lg';
-    if (totalLength < 400) return 'text-base';
+    if (totalLength < 400) return 'text-lg';
     return 'text-sm';
   };
 
@@ -122,11 +175,35 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
       }
 
       const data = await response.json();
-      setPoem(data.poem);
+      
+      // Clean the poem text to remove any JSON artifacts or extra formatting
+      let cleanPoem = data.poem || '';
+      cleanPoem = cleanPoem
+        .replace(/\\n/g, '\n')  // Convert escaped newlines
+        .replace(/^["']|["']$/g, '')  // Remove surrounding quotes
+        .replace(/^\{.*\}/g, '')  // Remove any JSON objects
+        .trim();
+      
+      // Clean the title text
+      let cleanTitle = data.title || null;
+      if (cleanTitle) {
+        cleanTitle = cleanTitle
+          .replace(/^["']|["']$/g, '')  // Remove surrounding quotes
+          .replace(/\\(.)/g, '$1')  // Unescape characters
+          .trim();
+        console.log('Generated title:', cleanTitle);
+      } else {
+        console.warn('No title received from API');
+      }
+      
+      setPoem(cleanPoem);
+      setGeneratedTitle(cleanTitle);
+      setColorMeanings(data.colorMeanings || []);
+      setPoemType(data.poemType || null);
       setShowGenerated(true); // Auto-switch to generated poem
 
       if (onPoemGenerated) {
-        onPoemGenerated(color, colorName, data.poem);
+        onPoemGenerated(color, colorName, cleanPoem);
       }
     } catch (err) {
       console.error('Error generating poem:', err);
@@ -147,13 +224,88 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
       setPoem(null);
       setError(null);
       setShowGenerated(false); // Reset to original when color changes
+      setColorMeanings([]);
+      setPoemType(null);
+      setGeneratedTitle(null);
     }
   }, [color, colorName]); // dependant on color and colorNames
+
+  // Dynamically adjust letter-spacing and line-height to fill container
+  useEffect(() => {
+    const adjustTextSpacing = (containerRef: React.RefObject<HTMLDivElement | null>, setStyle: (style: React.CSSProperties) => void) => {
+      if (!containerRef.current) return;
+      
+      const container = containerRef.current;
+      const containerHeight = container.offsetHeight;
+      const textHeight = container.scrollHeight;
+      
+      if (containerHeight === 0 || textHeight === 0) return;
+      
+      // Calculate how much we need to stretch or compress
+      const ratio = containerHeight / textHeight;
+      
+      // Adjust letter-spacing and line-height based on ratio
+      let letterSpacing = '0em';
+      let lineHeight = '1.625'; // default relaxed
+      
+      if (ratio > 1.2) {
+        // Container is much larger - stretch the text
+        const stretch = Math.min((ratio - 1) * 0.15, 0.3);
+        letterSpacing = `${stretch}em`;
+        lineHeight = `${1.625 + (ratio - 1) * 0.4}`;
+      } else if (ratio < 0.9) {
+        // Text is too large - compress it
+        const compress = Math.max((ratio - 1) * 0.1, -0.05);
+        letterSpacing = `${compress}em`;
+        lineHeight = `${1.625 + (ratio - 1) * 0.3}`;
+      }
+      
+      setStyle({
+        letterSpacing,
+        lineHeight,
+      });
+    };
+
+    // Delay adjustment to ensure layout is complete
+    const timer = setTimeout(() => {
+      if (!showGenerated) {
+        adjustTextSpacing(originalPoemRef, setOriginalPoemStyle);
+      } else {
+        adjustTextSpacing(generatedPoemRef, setGeneratedPoemStyle);
+      }
+    }, 100);
+    
+    // Re-adjust on window resize
+    const handleResize = () => {
+      if (!showGenerated) {
+        adjustTextSpacing(originalPoemRef, setOriginalPoemStyle);
+      } else {
+        adjustTextSpacing(generatedPoemRef, setGeneratedPoemStyle);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [showGenerated, poem]);
 
     
 
 
   return (
+    <>
+      <Head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Esteban&display=swap" rel="stylesheet" />
+      </Head>
+      <style jsx global>{`
+        .font-bangers {
+          font-family: 'Esteban', serif !important;
+        }
+      `}</style>
     <div className="w-full h-full flex flex-col gap-2 p-0">
       {/* Poem Container with Aurora Background */}
       <div 
@@ -170,38 +322,83 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
         <div className="absolute inset-0 bg-linear-to-br from-slate-950/60 via-slate-900/50 to-slate-950/60 backdrop-blur-xs"></div>
         
         {/* Content */}
-        <div className="relative z-10 p-4 pb-0 flex flex-col flex-1 min-h-0">
+        <div className="relative z-10 p-2 sm:p-4 pb-0 flex flex-col flex-1 min-h-0">
         
         {/* Date Header */}
-        <div className="text-center mb-6 border-b border-slate-700/50 pb-4 shrink-0">
-          <p className="text-slate-400 text-sm uppercase tracking-widest mb-2">
+        <div className="text-center mb-3 sm:mb-6 border-b border-slate-700/50 pb-0 sm:pb-4 shrink-0">
+          <p className="text-slate-400 text-xs sm:text-sm uppercase tracking-widest mb-2">
             {showGenerated && poem ? 'Color Poem' : "Today's Poem"}
           </p>
           <div className="flex items-center justify-center gap-2">
-            {!showGenerated && <Calendar className="w-5 h-5 text-slate-400" />}
-            {showGenerated && poem && color && (
-              <div 
-                className="w-6 h-6 rounded border-2 border-white/50 shadow-lg"
-                style={{ backgroundColor: color }}
-              />
-            )}
-            <h2 className="text-2xl font-ui font-light text-white mb-1">
-              {showGenerated && poem && color ? hslToHex(color) : formmattedDate}
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+            <h2 className="text-xl sm:text-2xl font-ui font-light text-white mb-1">
+              {formmattedDate}
             </h2>
           </div>
-          <div className="flex items-center justify-center gap-2 mt-4">
-            <div className="h-px w-12 bg-linear-to-r from-transparent to-slate-600"></div>
-            <span className="text-slate-500 text-xs">✦</span>
-            <div className="h-px w-12 bg-linear-to-l from-transparent to-slate-600"></div>
+          <div className="flex items-center justify-center gap-2 mt-0">
+            <div className="h-px w-8 sm:w-12 bg-linear-to-r from-transparent to-slate-500"></div>
+            <span className="text-slate-300 text-sm">✦</span>
+            <div className="h-px w-8 sm:w-12 bg-linear-to-l from-transparent to-slate-500"></div>
           </div>
         </div>
 
         {/* Two Column Layout: Poem + Details */}
-        <div className="flex-1 min-h-0 flex gap-4 overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 overflow-hidden py-2 px-1">
           
           {/* Left Column: Poem Content */}
-          <div className="flex-1 flex flex-col items-center justify-center min-h-0 overflow-y-auto px-4">
+          <div className="flex-1 flex flex-col items-center justify-start min-h-0 overflow-y-auto p-3 lg:p-6 lg:pt-0 rounded-xl backdrop-blur-sm w-full lg:w-3/5">
             
+            {/* Action Buttons Toolbar */}
+            <div className="w-full flex flex-wrap items-center justify-between gap-2 mb-4 pb-2 sm:pb-3 border-b border-slate-700/30 shrink-0">
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                {/* Copy Button */}
+                <button
+                  onClick={handlePoemCopy}
+                  className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-slate-600/30 transition-all text-xs text-slate-300 hover:text-white"
+                  title="Copy poem"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy'}</span>
+                </button>
+
+                {/* Font Size Controls */}
+                <div className="flex items-center gap-1 px-1 sm:px-2 py-1 bg-slate-800/50 rounded-lg border border-slate-600/30">
+                  <button
+                    onClick={decreaseFontSize}
+                    className="p-0.5 sm:p-1 hover:bg-slate-700/50 rounded transition-all text-slate-300 hover:text-white"
+                    title="Decrease font size"
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={resetFontSize}
+                    className="px-1 sm:px-2 py-0.5 sm:py-1 hover:bg-slate-700/50 rounded transition-all text-xs text-slate-400 hover:text-white"
+                    title="Reset font size"
+                  >
+                    <TypeIcon className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={increaseFontSize}
+                    className="p-0.5 sm:p-1 hover:bg-slate-700/50 rounded transition-all text-slate-300 hover:text-white"
+                    title="Increase font size"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Try Similar Colors Button */}
+              <button
+                onClick={handleTrySimilarColors}
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-slate-600/30 transition-all text-xs text-slate-300 hover:text-white"
+                title="Try similar colors"
+              >
+                <Palette className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Similar</span>
+                
+              </button>
+            </div>
+
             {/* Loading State */}
             {isLoading && showGenerated && (
               <div className="flex-1 flex items-center justify-center">
@@ -218,7 +415,21 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
 
             {/* Original Poem Display */}
             {!showGenerated && !isLoading && (
-              <div className={`flex flex-col items-center justify-center w-full font-poem ${getDailyPoemFontSize()} leading-relaxed text-slate-200 text-center space-y-1 max-w-xl animate-fade-slide-in`}>
+              <div 
+                ref={originalPoemRef}
+                className={`flex flex-col items-center justify-center w-full flex-1 font-bangers ${getDailyPoemFontSize()} text-slate-200 text-center space-y-1 max-w-xl animate-fade-slide-in`}
+                style={{...originalPoemStyle, fontSize: `${fontSizeMultiplier}em`}}
+              >
+                {todaysPoem.title && todaysPoem.author && (
+                  <>
+                    <h3 className="text-xl font-bold text-blue-400 mb-2  ">
+                      &ldquo;{todaysPoem.title}&rdquo;
+                    </h3>
+                    <h4 className="text-sm font-medium text-slate-400 mb-2 italic">
+                      {todaysPoem.author}
+                    </h4>
+                  </>
+                )}
                 {todaysPoem.lines.map((line, index) => (
                   <p key={index} className="transition-all hover:text-white">
                     {line}
@@ -229,32 +440,56 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
 
             {/* Generated Poem Display */}
             {showGenerated && poem && !isLoading && !error && (
-              <div className={`flex flex-col items-center justify-center w-full font-poem ${getPoemFontSize(poem)} leading-relaxed text-slate-200 text-center space-y-1 max-w-xl animate-fade-slide-in`}>
-                {poem.split('\n').map((line, index) => (
+              <div 
+                ref={generatedPoemRef}
+                className={`flex flex-col items-center justify-center w-full flex-1 font-bangers ${getPoemFontSize(poem)} text-slate-200 text-center space-y-1 max-w-xl animate-fade-slide-in`}
+                style={{...generatedPoemStyle, fontSize: `${fontSizeMultiplier}em`}}
+              >
+                {generatedTitle && (
+                  <>
+                    <h3 className="text-lg font-semibold text-white mb-2 italic">
+                      &ldquo;{generatedTitle}&rdquo;
+                    </h3>
+                    <h4 className="text-sm font-medium text-slate-400 mb-2 italic">
+                      Made by you
+                    </h4>
+                  </>
+                )}
+                {poem.split('\n').filter(line => line.trim()).map((line, index) => (
                   <p key={index} className="transition-all hover:text-white">
-                    {line}
+                    {line.trim()}
                   </p>
+                  
                 ))}
+                  {/* Decorative bottom border */}
+               
               </div>
             )}
+             <div className="flex items-center justify-center mt-3">
+                  <div className="h-px w-12 bg-linear-to-r from-transparent via-blue-400/50 to-transparent"></div>
+                  <div className="mx-3 text-purple-400/60 text-xs">✦</div>
+                  <div className="h-px w-12 bg-linear-to-r from-transparent via-blue-400/50 to-transparent"></div>
+                </div>
           </div>
 
           {/* Right Column: Poem Details */}
-          <div className="w-80 shrink-0 overflow-y-auto">
+          <div className="w-full lg:w-2/5 shrink-0 overflow-y-auto">
             <PoemDetails
               showGenerated={showGenerated && !!poem}
               color={color}
               colorName={colorName}
-              poemTitle={todaysPoem.title}
-              poemAuthor={todaysPoem.author}
-              date={formmattedDate}
+              poemTitle={showGenerated && generatedTitle ? generatedTitle : todaysPoem.title}
+              poemAuthor={showGenerated ? 'Made by you' : todaysPoem.author}
+              authorInfo={!showGenerated ? getAuthorInfo(todaysPoem.author) : undefined}
+              colorMeanings={colorMeanings}
+              poemType={poemType}
             />
           </div>
         </div>
         </div>
         
         {/* Action Bar */}
-        <div className="relative z-10 w-full grid grid-cols-3 gap-2 border-t border-slate-700/50 bg-slate-950/40 backdrop-blur-sm p-3 shrink-0">
+        <div className="relative z-10 w-full grid grid-cols-1 sm:grid-cols-3 gap-2 border-t border-slate-700/50 bg-slate-950/40 backdrop-blur-sm py-3 px-3 sm:px-5 shrink-0">
           
           {/* Section 1: Original Button */}
           <button
@@ -310,6 +545,7 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
       </div>
       {/* End Poem Card Container */}
     </div>
+    </>
   );
 });
 

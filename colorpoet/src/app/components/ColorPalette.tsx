@@ -70,19 +70,19 @@ const ColorPalette = memo(({ colors, paletteRef, colorName, colorValue, hoveredC
         </div>
 
         {/* Right: Selected Color Section */}
-        <div className="shrink-0 w-2/5 flex flex-col gap-2">
+        <div className="shrink-0 w-2/5 flex flex-col gap-2 min-h-0">
           <h3 className="flex items-center gap-2 text-slate-300 text-xs uppercase tracking-widest font-ui px-1">
             <Sparkles className="w-4 h-4" />
             Selected Color
           </h3>
-          <div className="flex-1 flex items-center ">
+          <div className="flex-1 flex items-center">
             <SelectedColorDisplay colorName={colorName} colorValue={colorValue} onGeneratePoem={onGeneratePoem} />
           </div>
         </div>
       </div>
 
       {/* Tips Bar - Fixed at bottom */}
-      <div className="shrink-0">
+      <div className="shrink-0 mt-2">
         <TipsBar />
       </div>
     </div>

@@ -11,6 +11,7 @@ const config: Config = {
       fontFamily: {
         ui: ["var(--font-inter)", "sans-serif"],
         poem: ["var(--font-cormorant)", "serif"],
+        bangers: ["var(--font-bangers)", "cursive"],
       },
     },
   },

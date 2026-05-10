@@ -38,6 +38,8 @@ const [selectedColorName, setSelectedColorName] = useState<string | null>(null);
 const [hoveredColor, setHoveredColor] = useState<string | null>(null);
 const [landmarkCount, setLandmarkCount] = useState<number>(0);
 const [showHistory, setShowHistory] = useState(false);
+const [confirmedColor, setConfirmedColor] = useState<string | null>(null);
+const [confirmedColorName, setConfirmedColorName] = useState<string | null>(null);
 
 // Poem history - store up to 10 recent poems
 const [poemHistory, setPoemHistory] = useState<Array<{
@@ -45,20 +47,7 @@ const [poemHistory, setPoemHistory] = useState<Array<{
   color: string;
   colorName: string;
   poem: string;
-}>>(() => {
-  // Load from localStorage on initial render
-  if (typeof window !== 'undefined') {
-    const savedHistory = localStorage.getItem('poemHistory');
-    if (savedHistory) {
-      try {
-        return JSON.parse(savedHistory);
-      } catch (error) {
-        console.error('Failed to load poem history:', error);
-      }
-    }
-  }
-  return [];
-});
+}>>([]);
 
 
 // Hand cursor position in SCREEN coordinates (pixels)
@@ -66,6 +55,21 @@ const [handCursor, setHandCursor] = useState<{ x: number; y: number } | null>(nu
 
 // Generate color palette once using useMemo
 const colorPalette = useMemo(() => generateColorPalette(), []);
+
+
+
+// Load poem history from localStorage after component mounts (client-side only)
+useEffect(() => {
+  const savedHistory = localStorage.getItem('poemHistory');
+  if (savedHistory) {
+    try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPoemHistory(JSON.parse(savedHistory));
+    } catch (error) {
+      console.error('Failed to load poem history:', error);
+    }
+  }
+}, []);
 
 
 
@@ -109,10 +113,14 @@ return () => {
 
   // Function to trigger poem generation from button
   const handleGeneratePoem = useCallback(() => {
+// Confirm the slected color before generating poem
+    setConfirmedColor(selectedColor);
+    setConfirmedColorName(selectedColorName);
+
     if (poemCardRef.current) {
       poemCardRef.current.generatePoem();
     }
-  }, []);
+  }, [selectedColor, selectedColorName]);
 
   /**
    * Map hand position from video space to color palette space
@@ -220,13 +228,13 @@ return () => {
         const pinchY = (thumb.y + index.y) / 2;
         
         const color = checkColorHit(pinchX, pinchY);
-        if (color) {
+        if (color && color !== selectedColor) {
           setSelectedColor(color);
           setSelectedColorName(getColorName(color));
         }
       }
     }
-  }, [mapHandToPalette]);
+  }, [mapHandToPalette, selectedColor]);
 
   /**
    * Get which hand is being tracked (Left/Right/Unknown)
@@ -439,7 +447,11 @@ return () => {
 
         {/* RIGHT COLUMN: Poem Card - Full height */}
         <div className="w-1/2 h-full">
-          <PoemCard ref={poemCardRef} color={selectedColor} colorName={selectedColorName} onPoemGenerated={addToHistory} />
+          <PoemCard 
+          ref={poemCardRef} 
+          color={confirmedColor} 
+          colorName={confirmedColorName} 
+          onPoemGenerated={addToHistory} />
         </div>
         
       </div>
