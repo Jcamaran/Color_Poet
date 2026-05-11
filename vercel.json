@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd colorpoet && npm install && npm run build",
+  "outputDirectory": "colorpoet/.next",
+  "installCommand": "cd colorpoet && npm install"
+}
