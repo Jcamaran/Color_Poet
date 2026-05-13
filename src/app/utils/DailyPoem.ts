@@ -1,9 +1,10 @@
 
 // This will retreive the poem data from each day as a object and display it on the home page of the app
-interface Poem { 
+export interface Poem { 
     title: string; 
     author: string;
     lines: string[];
+    colorVibe: [string, string, string]; // Array of 3 hex colors representing the poem's mood/atmosphere
 }
 
 // 31 Classic poems that cycle through based on day of year
@@ -11,6 +12,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "No Man Is An Island",
     author: "John Donne",
+    colorVibe: ['#3b6fa0', '#5a9ecf', '#91c4e8'], // calm oceanic blue — interconnectedness, humanity
     lines: [
       "No man is an island,",
       "Entire of itself,",
@@ -30,6 +32,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Stopping by Woods On a Snowy Evening",
     author: "Robert Frost",
+    colorVibe: ['#1a2a3a', '#4a7fa5', '#c8dff0'], // deep night blues fading to icy white — solitude, winter stillness
     lines: [
       "Whose woods these are I think I know.",
       "His house is in the village though;",
@@ -52,6 +55,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Still I Rise",
     author: "Maya Angelou",
+    colorVibe: ['#c0392b', '#e67e22', '#f9ca24'], // fiery red to golden sunrise — defiance, triumph, power
     lines: [
       "You may write me down in history",
       "With your bitter, twisted lies,",
@@ -62,6 +66,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Shall I Compare Thee To A Summer's Day?",
     author: "William Shakespeare",
+    colorVibe: ['#f6d365', '#fda085', '#f9ca24'], // warm golden amber — love, beauty, eternal summer
     lines: [
       "Shall I compare thee to a summer's day?",
       "Thou art more lovely and more temperate.",
@@ -82,6 +87,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "There Will Come Soft Rain",
     author: "Sara Teasdale",
+    colorVibe: ['#56ab2f', '#a8e063', '#d4edda'], // gentle spring greens — nature's quiet resilience
     lines: [
       "There will come soft rains and the smell of the ground,",
       "And swallows circling with their shimmering sound;",
@@ -96,6 +102,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "O Captain! My Captain!",
     author: "Walt Whitman",
+    colorVibe: ['#8b0000', '#2c3e6e', '#c0c8d8'], // deep crimson to navy — grief, heroism, mourning
     lines: [
       "O Captain! my Captain! our fearful trip is done;",
       "The ship has weather'd every rack, the prize we sought is won;",
@@ -110,6 +117,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Fire And Ice",
     author: "Robert Frost",
+    colorVibe: ['#e74c3c', '#8e44ad', '#aed6f1'], // fierce red to cold icy blue — passion vs. hatred, destruction
     lines: [
       "Some say the world will end in fire,",
       "Some say in ice.",
@@ -125,6 +133,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "The Road Not Taken",
     author: "Robert Frost",
+    colorVibe: ['#d4a017', '#8b6914', '#4a7c2f'], // golden amber to forest green — autumn paths, choice, reflection
     lines: [
       "Two roads diverged in a yellow wood,",
       "And sorry I could not travel both",
@@ -141,6 +150,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Dreams",
     author: "Langston Hughes",
+    colorVibe: ['#7b2ff7', '#f107a3', '#ffecd2'], // vivid violet to blush — aspiration, hope, yearning
     lines: [
       "Hold fast to dreams",
       "For if dreams die",
@@ -155,6 +165,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Trees",
     author: "Joyce Kilmer",
+    colorVibe: ['#2d6a4f', '#52b788', '#d8f3dc'], // deep forest to light mint — reverence, nature, serenity
     lines: [
       "I think that I shall never see",
       "A poem lovely as a tree.",
@@ -169,6 +180,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Ozymandias",
     author: "Percy Bysshe Shelley",
+    colorVibe: ['#c8a96e', '#7a5c2e', '#2c2416'], // desert gold to dark sand — hubris, decay, the passage of time
     lines: [
       "I met a traveller from an antique land",
       "Who said: Two vast and trunkless legs of stone",
@@ -186,6 +198,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "If",
     author: "Rudyard Kipling",
+    colorVibe: ['#1a3a5c', '#2e7d96', '#76b8c8'], // steely blue — stoic strength, resilience, virtue
     lines: [
       "If you can keep your head when all about you",
       "Are losing theirs and blaming it on you;",
@@ -198,6 +211,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Remember",
     author: "Christina Georgina Rossetti",
+    colorVibe: ['#6b4c82', '#9b7eb8', '#e8d5f5'], // soft lavender — memory, grief, tender farewell
     lines: [
       "Remember me when I am gone away,",
       "Gone far away into the silent land;",
@@ -211,6 +225,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "A Fairy Song",
     author: "William Shakespeare",
+    colorVibe: ['#00b09b', '#96c93d', '#e0f7e9'], // enchanted teal to leafy green — whimsy, magic, nature spirits
     lines: [
       "Over hill, over dale,",
       "Thorough bush, thorough brier,",
@@ -225,6 +240,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Do Not Stand At My Grave And Weep",
     author: "Mary Elizabeth Frye",
+    colorVibe: ['#87ceeb', '#e8f4f8', '#f0f8e8'], // sky blue to soft white — peace, transcendence, gentle consolation
     lines: [
       "Do not stand at my grave and weep",
       "I am not there. I do not sleep.",
@@ -237,6 +253,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "A Dream Within A Dream",
     author: "Edgar Allan Poe",
+    colorVibe: ['#2c1654', '#7b2ff7', '#c9a8f5'], // deep indigo to dreamy violet — illusion, existential mystery
     lines: [
       "Take this kiss upon the brow!",
       "And, in parting from you now,",
@@ -250,6 +267,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "How Do I Love Thee?",
     author: "Elizabeth Barrett Browning",
+    colorVibe: ['#ff6b9d', '#c44569', '#ffeaa7'], // rose pink to warm gold — deep romantic love, devotion
     lines: [
       "How do I love thee? Let me count the ways.",
       "I love thee to the depth and breadth and height",
@@ -262,6 +280,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Invictus",
     author: "William Ernest Henley",
+    colorVibe: ['#1a1a2e', '#e94560', '#f5a623'], // black to bold red to amber — darkness conquered, fierce resolve
     lines: [
       "Out of the night that covers me,",
       "Black as the Pit from pole to pole,",
@@ -278,6 +297,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Do Not Go Gentle Into That Good Night",
     author: "Dylan Thomas",
+    colorVibe: ['#0d0d0d', '#7f1d1d', '#f97316'], // pure black to burning orange — rage against death, burning intensity
     lines: [
       "Do not go gentle into that good night,",
       "Old age should burn and rave at close of day;",
@@ -287,6 +307,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Hope Is The Thing With Feathers",
     author: "Emily Dickinson",
+    colorVibe: ['#ffd89b', '#19547b', '#a8edea'], // dawn gold to sky blue — hope, lightness, endless song
     lines: [
       "Hope is the thing with feathers",
       "That perches in the soul",
@@ -297,6 +318,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "A Poison Tree",
     author: "William Blake",
+    colorVibe: ['#1a4731', '#c0392b', '#1e1e1e'], // dark forest green to deep red — hidden anger, corruption, sin
     lines: [
       "I was angry with my friend:",
       "I told my wrath, my wrath did end.",
@@ -311,6 +333,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "I Wandered Lonely As A Cloud",
     author: "William Wordsworth",
+    colorVibe: ['#f9ca24', '#6ab04c', '#22a6b3'], // golden daffodil yellow to sky blue — joy, nature's beauty, memory
     lines: [
       "I wandered lonely as a cloud",
       "That floats on high o'er vales and hills,",
@@ -323,6 +346,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Mother To Son",
     author: "Langston Hughes",
+    colorVibe: ['#6d4c41', '#a1887f', '#ffd54f'], // warm brown to amber — perseverance, struggle, maternal warmth
     lines: [
       "Well, son, I'll tell you:",
       "Life for me ain't been no crystal stair.",
@@ -336,6 +360,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Lovebirds",
     author: "Bean Poems",
+    colorVibe: ['#43c6ac', '#f8ffae', '#ffffff'], // teal to pale yellow to white — love, nature's glow, togetherness
     lines: [
       "The forest shines and shows its green",
       "It's steam, the leaves, their sheen is seen",
@@ -346,6 +371,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "The Mango",
     author: "Bean Poems",
+    colorVibe: ['#f7971e', '#ffd200', '#56ab2f'], // vibrant orange to green — tropical joy, growth, reward
     lines: [
       "For weeks they wait, a girl and boy",
       "She waters, tends with glee",
@@ -356,6 +382,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Coffee",
     author: "Bean Poems",
+    colorVibe: ['#3b1f0a', '#8b5e3c', '#d4a574'], // dark espresso to caramel — warmth, comfort, morning ritual
     lines: [
       "Heat and the beans and the water is joined",
       "Coming together in joint is the point",
@@ -366,6 +393,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "The Octopus Project",
     author: "Bean Poems",
+    colorVibe: ['#0f3460', '#533483', '#00b4d8'], // deep navy to teal — ocean depth, curiosity, justice
     lines: [
       "This octopus tells me",
       "a lot about you",
@@ -376,6 +404,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Surprises",
     author: "Bean Poems",
+    colorVibe: ['#fc5c7d', '#6a82fb', '#ffeaa7'], // bright pink to playful blue — delight, gift-giving, celebration
     lines: [
       "Surprise! A gift! From me to go.",
       "It's here so take a look",
@@ -386,6 +415,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "The Tyger",
     author: "William Blake",
+    colorVibe: ['#ff8c00', '#cc2200', '#1a0a00'], // blazing orange to dark black — primal fire, fearful symmetry, creation
     lines: [
       "Tyger Tyger, burning bright,",
       "In the forests of the night;",
@@ -396,6 +426,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "Annabel Lee",
     author: "Edgar Allan Poe",
+    colorVibe: ['#1a2a4a', '#4a7fa5', '#b8cfe8'], // midnight navy to pale sea blue — loss, eternal love, haunting beauty
     lines: [
       "It was many and many a year ago,",
       "In a kingdom by the sea,",
@@ -408,6 +439,7 @@ const DAILY_POEMS: Poem[] = [
   {
     title: "The New Colossus",
     author: "Emma Lazarus",
+    colorVibe: ['#b8860b', '#2e8b57', '#4682b4'], // gold to green to blue — liberty, welcome, American hope
     lines: [
       "Give me your tired, your poor,",
       "Your huddled masses yearning to breathe free,",
@@ -435,5 +467,10 @@ export function getTodaysPoem(): Poem {
 // Optional: Get specific day's poem
 export function getPoemForDay(dayOfYear: number): Poem {
   return DAILY_POEMS[dayOfYear % DAILY_POEMS.length];
+}
+
+// Get today's poem aurora color vibe (3 hex colors)
+export function getTodaysPoemColorVibe(): [string, string, string] {
+  return getTodaysPoem().colorVibe;
 }
 

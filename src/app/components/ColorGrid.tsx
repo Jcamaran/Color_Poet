@@ -312,7 +312,7 @@ return () => {
   return (
     <div className="h-screen p-4 overflow-hidden flex flex-col gap-2">
 
-      <div className="flex flex-row items-center justify-between shrink-0 gap-2">
+      <div className="flex flex-row flex-wrap items-center justify-between shrink-0 gap-2">
         {/* Left side: Logo and Title */}
         <div className="flex flex-row items-center gap-4">
           <Image className="h-9 w-9" src="/quill_purple.png" alt="ColorPoet Logo" width={36} height={36} />
@@ -321,7 +321,7 @@ return () => {
             Color<span className="text-violet-500/69">Poet</span>
           </h1>
           
-          <p className=" pl-1 text-xs text-slate-400 ">Color Poetry Generation ● Hand Tracker</p>
+          <p className="pl-1 text-xs text-slate-400 hidden sm:block">Color Poetry Generation ● Hand Tracker</p>
         </div>
 
         {/* Right side: History Widget */}
@@ -401,10 +401,10 @@ return () => {
       </div>
 
       {/* Main Layout: Left Column (Video + Palette) | Right Column (Poem) */}
-      <div className="flex gap-4 w-full px-0 flex-1 min-h-0">
+      <div className="flex flex-col md:flex-row gap-4 w-full px-0 flex-1 min-h-0">
         
         {/* LEFT COLUMN: Video on top, Color Palette on bottom */}
-        <div className="flex flex-col gap-4 w-1/2 h-full">
+        <div className="flex flex-col gap-4 w-full md:w-1/2 md:h-full">
           
           {/* Video Feed with Hand Tracking */}
           <div className="relative flex-1 min-h-0 rounded-lg overflow-hidden">
@@ -446,7 +446,7 @@ return () => {
         </div>
 
         {/* RIGHT COLUMN: Poem Card - Full height */}
-        <div className="w-1/2 h-full">
+        <div className="w-full md:w-1/2 md:h-full">
           <PoemCard 
           ref={poemCardRef} 
           color={confirmedColor} 

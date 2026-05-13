@@ -68,7 +68,7 @@ Return ONLY valid JSON, nothing else.`;
         temperature: 0.9,           // High creativity
         topK: 40,                   // Consider top 40 tokens
         topP: 0.95,                 // Nucleus sampling
-        maxOutputTokens: 300,       // Increased for JSON structure
+        maxOutputTokens: 800,      // Enough room for full JSON with poem + metadata
       }
     });
     
@@ -138,6 +138,22 @@ Return ONLY valid JSON, nothing else.`;
         fallbackTitle = titleMatch[1]
           .replace(/\\(.)/g, '$1')  // Unescape characters
           .trim();
+      }
+
+      // Try to extract colorMeanings from partial JSON
+      const meaningsMatch = responseText.match(/"colorMeanings"\s*:\s*\[([^\]]*)\]/);
+      if (meaningsMatch) {
+        try {
+          colorMeanings = JSON.parse(`[${meaningsMatch[1]}]`);
+        } catch {
+          // leave as []
+        }
+      }
+
+      // Try to extract poemType
+      const poemTypeMatch = responseText.match(/"poemType"\s*:\s*"([^"]*)"/i);
+      if (poemTypeMatch) {
+        poemType = poemTypeMatch[1].trim();
       }
       
       // Try to find poem content between quotes

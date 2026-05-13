@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ColorPoet
+
+Generate original AI poetry from colors — using your hand as the brush.
+
+ColorPoet uses your webcam and real-time hand tracking to let you select a color from a palette by pinching. That color is sent to Google Gemini, which writes a poem inspired by its mood and symbolism. A live WebGL aurora background shifts to match the color vibe of each poem.
+
+![ColorPoet](public/quill_purple.png)
+
+## Features
+
+- **Hand Tracking** — MediaPipe detects your hand in the webcam feed; a pinch gesture confirms your color pick
+- **AI Poem Generation** — Google Gemini (`gemini-2.5-flash-lite`) writes a poem based on the selected color, including a title, poem type, and color symbolism
+- **Dynamic Aurora** — WebGL aurora background (OGL) transitions smoothly to reflect the current color palette
+- **Daily Classic Poem** — A curated classic poem cycles each day of the year with its own color vibe
+- **Author Bios** — Rich author details (bio, image, Wikipedia & Poetry Foundation links) for all classic poets
+- **Poem Tools** — Copy, save as `.txt`, share, and adjust font size
+
+## Tech Stack
+
+| Layer | Tech |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 |
+| AI | Google Gemini (`@google/genai`) |
+| Hand Tracking | MediaPipe Tasks Vision |
+| WebGL | OGL |
+| Icons | Lucide React |
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repo and install dependencies:
+
+```bash
+npm install
+```
+
+2. Create a `.env.local` file and add your Gemini API key:
+
+```
+GEMINI_API_KEY=your_key_here
+```
+
+3. Run the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and allow camera access.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/app/
+  api/poem/route.ts     # Gemini API route
+  components/
+    Aurora.tsx          # WebGL aurora background
+    ColorGrid.tsx       # Main layout: camera, palette, poem card
+    ColorPalette.tsx    # Color swatches + hand interaction
+    PoemCard.tsx        # Poem display with aurora
+    PoemDetails.tsx     # Author info / color symbolism panel
+    VideoFeed.tsx       # Webcam feed + hand landmark canvas
+  utils/
+    AuthorBios.ts       # Classic poet bios + image paths
+    colorUtils.ts       # HSL/hex color helpers + aurora color mapping
+    DailyPoem.ts        # 31 curated poems with daily rotation + color vibes
+```
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy to [Vercel](https://vercel.com) and set `GEMINI_API_KEY` as an environment variable in the project settings.

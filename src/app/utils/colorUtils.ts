@@ -101,3 +101,49 @@ export const checkColorHit = (pinchX: number, pinchY: number): string | null => 
   
   return null;
 };
+
+/**
+ * Parse an HSL string into {h, s, l} numbers
+ */
+const parseHsl = (hslString: string): { h: number; s: number; l: number } | null => {
+  const match = hslString.match(/hsl\((\d+\.?\d*),\s*(\d+\.?\d*)%,\s*(\d+\.?\d*)%\)/);
+  if (!match) return null;
+  return { h: parseFloat(match[1]), s: parseFloat(match[2]), l: parseFloat(match[3]) };
+};
+
+/**
+ * Convert HSL values to a hex string
+ */
+const hslValuesToHex = (h: number, s: number, l: number): string => {
+  return hslToHex(`hsl(${h}, ${s}%, ${l}%)`);
+};
+
+/**
+ * Given an HSL color string, generate 3 aurora color stops as hex values.
+ * The first stop is the exact selected color; the other two are harmonious companions.
+ */
+export const getAuroraColorsFromHsl = (hslString: string): [string, string, string] => {
+  const parsed = parseHsl(hslString);
+  if (!parsed) return ['#7a7dfe', '#91e9c8', '#579ba7'];
+
+  const { h, s, l } = parsed;
+
+  // Stop 1: exact selected color as hex — no modification
+  const main = hslToHex(hslString);
+
+  // Stop 2: analogous — hue shifted +40°, slightly deeper
+  const analogous = hslValuesToHex(
+    (h + 40) % 360,
+    Math.min(s + 5, 100),
+    Math.max(l - 15, 20)
+  );
+
+  // Stop 3: split-complement — hue shifted -60°, lightened and softened
+  const complement = hslValuesToHex(
+    (h - 60 + 360) % 360,
+    Math.max(s - 20, 25),
+    Math.min(l + 15, 88)
+  );
+
+  return [main, analogous, complement];
+};

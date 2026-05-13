@@ -47,7 +47,7 @@ const SelectedColorDisplay = memo(({ colorName, colorValue, onGeneratePoem }: Se
     >
       <div className="flex flex-col items-center gap-3 w-full">
         <div
-          className="w-20 h-20 rounded-lg border-2 border-white shadow-lg"
+          className="lg:w-20 lg:h-20 sm:h-12 sm:w-12 md:h-16 md:w-16 w-10 h-10 rounded-lg border-2 border-white shadow-lg"
           style={{ backgroundColor: colorValue }}
         />
         <div className="flex flex-col items-center gap-1 w-full">

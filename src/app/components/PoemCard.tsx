@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
-import { Save, Share2, Copy, TypeIcon, Palette, Plus, Minus } from 'lucide-react';
-import { getTodaysPoem} from '../utils/DailyPoem';
+import { Save, Share2, Copy, TypeIcon, Palette, Plus, Minus, ChevronDown } from 'lucide-react';
+import { getTodaysPoem, getTodaysPoemColorVibe } from '../utils/DailyPoem';
+import { getAuroraColorsFromHsl } from '../utils/colorUtils';
 import { Calendar } from 'lucide-react';
 import { getAuthorInfo } from '../utils/AuthorBios';
 import Head from 'next/head';
@@ -40,6 +41,8 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
   const [generatedTitle, setGeneratedTitle] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [fontSizeMultiplier, setFontSizeMultiplier] = useState(1);
+  const [auroraColors, setAuroraColors] = useState<[string, string, string]>(getTodaysPoemColorVibe());
+  const [showDetailsOnMobile, setShowDetailsOnMobile] = useState(false);
 
   
   // Refs for dynamic text spacing
@@ -218,6 +221,15 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
     generatePoem
   }));
 
+  // Keep aurora in sync with the confirmed color prop (handles React batching correctly)
+  useEffect(() => {
+    if (color) {
+      setAuroraColors(getAuroraColorsFromHsl(color));
+    } else {
+      setAuroraColors(getTodaysPoemColorVibe());
+    }
+  }, [color]);
+
   // Clear poem when color changes
   useEffect(() => {
     if (!color || !colorName) {
@@ -315,7 +327,7 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
 
         {/* Aurora Background */}
         <div className="absolute inset-0 pointer-events-none">
-          <Aurora amplitude={1.2} blend={0.5} />
+          <Aurora colorStops={auroraColors} amplitude={1.2} blend={0.5} />
         </div>
         
         {/* Glassmorphism Overlay */}
@@ -343,10 +355,10 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
         </div>
 
         {/* Two Column Layout: Poem + Details */}
-        <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 overflow-hidden py-2 px-1">
+        <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 overflow-y-auto lg:overflow-hidden py-2 px-1">
           
           {/* Left Column: Poem Content */}
-          <div className="flex-1 flex flex-col items-center justify-start min-h-0 overflow-y-auto p-3 lg:p-6 lg:pt-0 rounded-xl backdrop-blur-sm w-full lg:w-3/5">
+          <div className="flex-1 flex flex-col items-center justify-start min-h-0 overflow-y-auto p-3 lg:p-6 lg:pt-0 rounded-xl backdrop-blur-sm w-full lg:w-3/5 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full">
             
             {/* Action Buttons Toolbar */}
             <div className="w-full flex flex-wrap items-center justify-between gap-2 mb-4 pb-2 sm:pb-3 border-b border-slate-700/30 shrink-0">
@@ -422,7 +434,7 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
               >
                 {todaysPoem.title && todaysPoem.author && (
                   <>
-                    <h3 className="text-xl font-bold text-blue-400 mb-2  ">
+                    <h3 className="text-2xl font-bold text-white mb-2  ">
                       &ldquo;{todaysPoem.title}&rdquo;
                     </h3>
                     <h4 className="text-sm font-medium text-slate-400 mb-2 italic">
@@ -470,10 +482,20 @@ const PoemCard = forwardRef<PoemCardRef, PoemCardProps>(function PoemCard({ colo
                   <div className="mx-3 text-purple-400/60 text-xs">✦</div>
                   <div className="h-px w-12 bg-linear-to-r from-transparent via-blue-400/50 to-transparent"></div>
                 </div>
+
+            {/* Mobile Details Toggle */}
+            <button
+              className="lg:hidden w-full mt-2 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-400 hover:text-white hover:bg-white/8 transition-all"
+              onClick={() => setShowDetailsOnMobile(prev => !prev)}
+            >
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showDetailsOnMobile ? 'rotate-180' : ''}`} />
+              {showDetailsOnMobile ? 'Hide' : 'Show'} {showGenerated ? 'Color Info' : 'Author Info'}
+            </button>
+
           </div>
 
           {/* Right Column: Poem Details */}
-          <div className="w-full lg:w-2/5 shrink-0 overflow-y-auto">
+          <div className={`w-full lg:w-2/5 lg:shrink-0 overflow-y-auto max-h-80 lg:max-h-none [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full ${showDetailsOnMobile ? 'block' : 'hidden lg:block'}`}>
             <PoemDetails
               showGenerated={showGenerated && !!poem}
               color={color}

@@ -113,16 +113,32 @@ interface AuroraProps {
   blend?: number;
   time?: number;
   speed?: number;
+  transitionSpeed?: number; // 0-1, lower = slower fade (default 0.025)
 }
 
 export default function Aurora(props: AuroraProps) {
   const { colorStops = ['#7a7dfe', '#91e9c8', '#579ba7'], amplitude = 1.0, blend = 0.5 } = props;
   const propsRef = useRef<AuroraProps>(props);
 
+  // Pre-parsed target RGB — only recomputed when colorStops actually changes
+  const targetRGBRef = useRef<[number, number, number][]>(
+    colorStops.map(hex => { const c = new Color(hex); return [c.r, c.g, c.b] as [number, number, number]; })
+  );
+  const prevStopsRef = useRef<string[]>(colorStops);
+
   const ctnDom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     propsRef.current = props;
+    // Reparse only when the stop values genuinely change
+    const newStops = props.colorStops ?? ['#7a7dfe', '#91e9c8', '#579ba7'];
+    if (newStops.some((s, i) => s !== prevStopsRef.current[i])) {
+      targetRGBRef.current = newStops.map(hex => {
+        const c = new Color(hex);
+        return [c.r, c.g, c.b] as [number, number, number];
+      });
+      prevStopsRef.current = newStops;
+    }
   });
 
   useEffect(() => {
@@ -179,19 +195,36 @@ export default function Aurora(props: AuroraProps) {
     const mesh = new Mesh(gl, { geometry, program });
     ctn.appendChild(gl.canvas);
 
+    // Track currently rendered colors for smooth interpolation
+    const currentColors: [number, number, number][] = colorStopsArray.map(
+      c => [c[0], c[1], c[2]] as [number, number, number]
+    );
+
     let animateId = 0;
+    let prevT = 0;
     const update = (t: number) => {
       animateId = requestAnimationFrame(update);
-      const { time = t * 0.01, speed = 1.0 } = propsRef.current;
+      const dt = prevT === 0 ? 0 : Math.min((t - prevT) / 1000, 0.05); // seconds, capped at 50ms
+      prevT = t;
+
+      const { time = t * 0.01, speed = 1.0, transitionSpeed = 0.025 } = propsRef.current;
       if (program) {
         program.uniforms.uTime.value = time * speed * 0.1;
         program.uniforms.uAmplitude.value = propsRef.current.amplitude ?? 1.0;
         program.uniforms.uBlend.value = propsRef.current.blend ?? blend;
-        const stops = propsRef.current.colorStops ?? colorStops;
-        program.uniforms.uColorStops.value = stops.map((hex: string) => {
-          const c = new Color(hex);
-          return [c.r, c.g, c.b];
-        });
+
+        // Delta-time normalised lerp: consistent speed at any frame rate
+        // transitionSpeed is defined as the factor per 60fps frame (~16.7ms)
+        const alpha = dt === 0 ? 0 : 1 - Math.pow(1 - transitionSpeed, dt * 60);
+        const targets = targetRGBRef.current;
+        for (let i = 0; i < currentColors.length; i++) {
+          for (let ch = 0; ch < 3; ch++) {
+            currentColors[i][ch] += (targets[i][ch] - currentColors[i][ch]) * alpha;
+          }
+        }
+
+        // Assign directly — no new arrays allocated per frame
+        program.uniforms.uColorStops.value = currentColors;
         renderer.render({ scene: mesh });
       }
     };

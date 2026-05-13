@@ -71,7 +71,7 @@ const ColorPalette = memo(({ colors, paletteRef, colorName, colorValue, hoveredC
 
         {/* Right: Selected Color Section */}
         <div className="shrink-0 w-2/5 flex flex-col gap-2 min-h-0">
-          <h3 className="flex items-center gap-2 text-slate-300 text-xs uppercase tracking-widest font-ui px-1">
+          <h3 className="flex items-center gap-2 text-slate-300 text-xs uppercase tracking-widest font-ui whitespace-nowrap px-1">
             <Sparkles className="w-4 h-4" />
             Selected Color
           </h3>
